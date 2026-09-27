@@ -3,16 +3,33 @@ import Medicine from "../models/medicineModel.js";
 // Get all medicines
 export const getMedicines = async (req, res) => {
     try {
-        const medicines = await Medicine.find();
-        res.status(200).json(medicines);
+        const { search } = req.query;
+
+        let query = {};
+
+        if (search) {
+            query = {
+                name: {
+                    $regex: search,
+                    $options: "i"
+                }
+            };
+        }
+
+        const medicines = await Medicine.find(query);
+
+        res.status(200).json({
+            medicines
+        });
+
     } catch (error) {
         console.error("Get medicines error:", error);
+
         res.status(500).json({
             message: "Failed to get medicines"
         });
     }
 };
-
 // Get medicine by ID
 export const getMedicineById = async (req, res) => {
     try {
