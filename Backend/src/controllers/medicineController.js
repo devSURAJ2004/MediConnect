@@ -41,9 +41,13 @@ export const getMedicineById = async (req, res) => {
             });
         }
 
-        res.status(200).json(medicine);
+        res.status(200).json({
+            medicine
+        });
+
     } catch (error) {
         console.error("Get medicine by ID error:", error);
+
         res.status(500).json({
             message: "Failed to get medicine"
         });
