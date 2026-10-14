@@ -20,20 +20,30 @@ function Checkout() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    if (!cart || !cart.items || cart.items.length === 0) {
-        return (
-            <div className="container page">
-                <div className="empty-cart">
-                    <div className="empty-cart-icon">🛒</div>
-                    <h1>Your Cart is Empty</h1>
-                    <p>
-                        Add some medicines before
-                        proceeding to checkout.
-                    </p>
-                </div>
+   
+if (loading) {
+    return (
+        <div className="container page">
+            <p>Loading your cart...</p>
+        </div>
+    );
+}
+
+if (!cart || !cart.items || cart.items.length === 0) {
+    return (
+        <div className="container page">
+            <div className="empty-cart">
+                <div className="empty-cart-icon">🛒</div>
+                <h1>Your Cart is Empty</h1>
+                <p>
+                    Add some medicines before
+                    proceeding to checkout.
+                </p>
             </div>
-        );
-    }
+        </div>
+    );
+}
+
 
     const total = cart.items.reduce(
         (sum, item) =>

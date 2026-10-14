@@ -1,21 +1,27 @@
-import { createContext, useContext, useEffect, useState } from "react";
+
+import {
+    createContext,
+    useContext,
+    useEffect,
+    useState
+} from "react";
+
 import api from "../services/api.js";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    const getToken = () => {
-        return localStorage.getItem("token");
-    };
+    const getToken = () => localStorage.getItem("token");
 
     const fetchCart = async () => {
         const token = getToken();
 
         if (!token) {
             setCart(null);
+            setLoading(false);
             return;
         }
 
@@ -30,7 +36,10 @@ export const CartProvider = ({ children }) => {
 
             setCart(response.data.cart);
         } catch (error) {
-            console.error(error);
+            console.error(
+                "Fetch cart error:",
+                error.response?.data || error.message
+            );
         } finally {
             setLoading(false);
         }
@@ -39,12 +48,13 @@ export const CartProvider = ({ children }) => {
     const addToCart = async (medicineId, quantity) => {
         const token = getToken();
 
+        if (!token) {
+            throw new Error("Please login first");
+        }
+
         const response = await api.post(
             "/cart",
-            {
-                medicineId,
-                quantity
-            },
+            { medicineId, quantity },
             {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -53,7 +63,6 @@ export const CartProvider = ({ children }) => {
         );
 
         setCart(response.data.cart);
-
         return response.data;
     };
 
@@ -62,9 +71,7 @@ export const CartProvider = ({ children }) => {
 
         const response = await api.put(
             `/cart/${medicineId}`,
-            {
-                quantity
-            },
+            { quantity },
             {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -73,7 +80,6 @@ export const CartProvider = ({ children }) => {
         );
 
         setCart(response.data.cart);
-
         return response.data;
     };
 
@@ -90,7 +96,6 @@ export const CartProvider = ({ children }) => {
         );
 
         setCart(response.data.cart);
-
         return response.data;
     };
 
@@ -114,6 +119,4 @@ export const CartProvider = ({ children }) => {
     );
 };
 
-export const useCart = () => {
-    return useContext(CartContext);
-};
+export const useCart = () => useContext(CartContext);
