@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext.jsx";
@@ -8,6 +9,7 @@ function Checkout() {
     const { cart } = useCart();
 
     const [formData, setFormData] = useState({
+        fullName: "",
         address: "",
         city: "",
         state: "",
@@ -22,12 +24,8 @@ function Checkout() {
         return (
             <div className="container page">
                 <div className="empty-cart">
-                    <div className="empty-cart-icon">
-                        🛒
-                    </div>
-
+                    <div className="empty-cart-icon">🛒</div>
                     <h1>Your Cart is Empty</h1>
-
                     <p>
                         Add some medicines before
                         proceeding to checkout.
@@ -39,8 +37,7 @@ function Checkout() {
 
     const total = cart.items.reduce(
         (sum, item) =>
-            sum +
-            item.medicine.price * item.quantity,
+            sum + item.medicine.price * item.quantity,
         0
     );
 
@@ -58,8 +55,7 @@ function Checkout() {
             setLoading(true);
             setError("");
 
-            const token =
-                localStorage.getItem("token");
+            const token = localStorage.getItem("token");
 
             await api.post(
                 "/orders",
@@ -70,7 +66,10 @@ function Checkout() {
                         price: item.medicine.price
                     })),
                     totalAmount: total,
-                    shippingAddress: formData
+                    shippingAddress: {
+                        ...formData,
+                        fullName: formData.fullName.trim()
+                    }
                 },
                 {
                     headers: {
@@ -81,9 +80,10 @@ function Checkout() {
 
             navigate("/orders");
         } catch (error) {
-            console.error(error);
+            console.error("Place order error:", error);
 
             setError(
+                error.response?.data?.error ||
                 error.response?.data?.message ||
                 "Failed to place order"
             );
@@ -94,7 +94,6 @@ function Checkout() {
 
     return (
         <div className="container page">
-
             <div className="checkout-header">
                 <h1>Checkout</h1>
                 <p>
@@ -104,21 +103,27 @@ function Checkout() {
             </div>
 
             <div className="checkout-layout">
-
-                {/* CUSTOMER DETAILS */}
-
                 <div className="checkout-form-container">
-
                     <h2>Delivery Information</h2>
 
                     <form
                         className="checkout-form"
                         onSubmit={handleSubmit}
                     >
+                        <div className="checkout-field">
+                            <label>Full Name</label>
+                            <input
+                                type="text"
+                                name="fullName"
+                                placeholder="Enter your full name"
+                                value={formData.fullName}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
 
                         <div className="checkout-field">
                             <label>Phone Number</label>
-
                             <input
                                 type="tel"
                                 name="phone"
@@ -131,7 +136,6 @@ function Checkout() {
 
                         <div className="checkout-field">
                             <label>Address</label>
-
                             <textarea
                                 name="address"
                                 placeholder="House number, street, area"
@@ -143,10 +147,8 @@ function Checkout() {
                         </div>
 
                         <div className="checkout-row">
-
                             <div className="checkout-field">
                                 <label>City</label>
-
                                 <input
                                     type="text"
                                     name="city"
@@ -159,7 +161,6 @@ function Checkout() {
 
                             <div className="checkout-field">
                                 <label>State</label>
-
                                 <input
                                     type="text"
                                     name="state"
@@ -169,27 +170,25 @@ function Checkout() {
                                     required
                                 />
                             </div>
-
                         </div>
 
                         <div className="checkout-field">
                             <label>PIN Code</label>
-
                             <input
                                 type="text"
                                 name="pincode"
                                 placeholder="6-digit PIN code"
                                 value={formData.pincode}
                                 onChange={handleChange}
-                                maxLength="6"
+                                maxLength={6}
+                                pattern="[0-9]{6}"
+                                title="Enter a valid 6-digit PIN code"
                                 required
                             />
                         </div>
 
                         {error && (
-                            <p className="error">
-                                {error}
-                            </p>
+                            <p className="error">{error}</p>
                         )}
 
                         <button
@@ -201,44 +200,30 @@ function Checkout() {
                                 ? "Placing Order..."
                                 : `Place Order • ₹${total}`}
                         </button>
-
                     </form>
-
                 </div>
 
-                {/* ORDER SUMMARY */}
-
                 <div className="checkout-summary">
-
                     <h2>Order Summary</h2>
 
                     <div className="checkout-items">
-
                         {cart.items.map((item) => (
                             <div
                                 className="checkout-item"
                                 key={item.medicine._id}
                             >
-
                                 <div>
                                     <strong>
                                         {item.medicine.name}
                                     </strong>
-
-                                    <p>
-                                        Qty: {item.quantity}
-                                    </p>
+                                    <p>Qty: {item.quantity}</p>
                                 </div>
 
                                 <span>
-                                    ₹
-                                    {item.medicine.price *
-                                        item.quantity}
+                                    ₹{item.medicine.price * item.quantity}
                                 </span>
-
                             </div>
                         ))}
-
                     </div>
 
                     <div className="summary-divider" />
@@ -250,30 +235,22 @@ function Checkout() {
 
                     <div className="summary-row">
                         <span>Delivery</span>
-                        <span className="free">
-                            FREE
-                        </span>
+                        <span className="free">FREE</span>
                     </div>
 
                     <div className="summary-divider" />
 
                     <div className="summary-total">
                         <span>Total</span>
-
-                        <strong>
-                            ₹{total}
-                        </strong>
+                        <strong>₹{total}</strong>
                     </div>
 
                     <div className="checkout-security">
                         🔒 Your order information
                         is securely processed.
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     );
 }
