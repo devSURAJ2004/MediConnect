@@ -98,14 +98,16 @@ export const createOrder = async (req, res) => {
             order
         });
 
+
     } catch (error) {
+        console.error("Create order error:", error);
 
         res.status(500).json({
             message: "Server error",
             error: error.message
         });
-
     }
+
 };
 
 
