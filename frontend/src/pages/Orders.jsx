@@ -29,17 +29,23 @@ function Orders() {
                 setOrders(
                     response.data.orders || []
                 );
-            } catch (error) {
-                console.error(error);
+           
+} catch (error) {
+    console.error(
+        "Fetch orders error:",
+        error.response?.data || error.message
+    );
 
-                setError(
-                    error.response?.data?.message ||
-                    "Failed to load orders"
-                );
-            } finally {
-                setLoading(false);
-            }
-        };
+    setError(
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to load orders"
+    );
+} finally {
+    setLoading(false);
+}
+
 
         fetchOrders();
     }, []);
